@@ -10,8 +10,16 @@ import (
 // GET:  curl -H "Content-Type: application/json" -X GET http://localhost:8080/api/<id>
 func main() {
 	r := gin.Default()
-	r.GET("/api/:id", controllers.GetDataByID)
-	r.POST("/api", controllers.SetData)
+	_ = r.Group("req")
+	{
+		r.GET("/id/:id", controllers.GetDataByID)
+		r.GET("/user/:user", controllers.GetUserByID)
+	}
+ 	_ = r.Group("resp")
+	{
+		r.POST("/data", controllers.SetData)
+	}
+
 	err := r.Run()
 	if err != nil {
 		log.Fatalf("%s", err)
