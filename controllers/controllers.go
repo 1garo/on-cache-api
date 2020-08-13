@@ -12,6 +12,24 @@ import (
 
 var _id = new(int32)
 
+func checkUser(user string, login []*models.LOGIN) (int, int) {
+	var code, id int
+	log.Println(len(login))
+	for i := 0; i < len(login); i++ {
+		log.Printf("checkId(): %v %d", login[i], i)
+		log.Printf("login[i].ID: %d", login[i].ID)
+		if tempUser := login[i].USER; tempUser == user{
+			code = http.StatusOK
+			id = login[i].ID
+			break
+		} else {
+			code = http.StatusBadRequest
+			id = -1
+		}
+	}
+	return code, id
+}
+
 func checkId(id int, login []*models.LOGIN) int {
 	var code int
 	log.Println(len(login))
@@ -28,6 +46,22 @@ func checkId(id int, login []*models.LOGIN) int {
 	return code
 }
 
+func GetUserByID(c *gin.Context) {
+	user := c.Param("user")
+	login := models.GetLogin()
+	code, id := checkUser(user, login)
+	log.Printf("%d id da request\n", id)
+	if id == -1 {
+		c.JSON(code, gin.H{
+			"message": "user doesn't exist in memory!",
+		})
+	} else {
+		c.JSON(code, gin.H{
+			"id": login[id].ID,
+		})
+	}
+}
+
 func GetDataByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -39,7 +73,7 @@ func GetDataByID(c *gin.Context) {
 	code := checkId(id, login)
 	if code != 200 {
 		c.JSON(code, gin.H{
-			"message": "id does't exist in memory",
+			"message": "id does't exist in memory!",
 		})
 	} else {
 		c.JSON(code, gin.H{
@@ -56,7 +90,6 @@ func SetData(c *gin.Context) {
 		log.Fatalf("%s", err)
 	}
 	var login []*models.LOGIN
-	login = append(login, loginTemp)
 	login = models.SetLogin(loginTemp, _id)
 	log.Printf("SetData(): %v : %d", login[*_id], *_id)
 	c.JSON(http.StatusOK, gin.H{
