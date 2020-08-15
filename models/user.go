@@ -18,6 +18,9 @@ func SetLogin(_login *LOGIN, id *int32) []*LOGIN {
 	return login
 }
 
+func GetUsers() []*LOGIN {
+	return login
+}
 func GetLogin() []*LOGIN {
 	return login
 }
