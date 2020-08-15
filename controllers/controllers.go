@@ -9,8 +9,23 @@ import (
 	"strconv"
 	"sync/atomic"
 )
-
+// TODO: create a ok in functions that don't return an err
 var _id = new(int32)
+
+func GetAllUsers(c *gin.Context) {
+	var login []*models.LOGIN
+	login = models.GetUsers()
+	log.Printf("GetAllUsers(): %v : %d", login, *_id)
+	if login == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"err": "don't exist any user in the memory!",
+		})
+	}else {
+		c.JSON(http.StatusOK, gin.H{
+			"data": login,
+		})
+	}
+}
 
 func checkUser(user string, login []*models.LOGIN) (int, int) {
 	var code, id int
@@ -97,5 +112,4 @@ func SetData(c *gin.Context) {
 	})
 	atomic.AddInt32(_id, 1)
 	log.Printf("SetData(): %d", *_id)
-
 }
