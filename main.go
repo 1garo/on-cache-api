@@ -14,6 +14,7 @@ func main() {
 	{
 		r.GET("/id/:id", controllers.GetDataByID)
 		r.GET("/user/:user", controllers.GetUserByID)
+		r.GET("/users", controllers.GetAllUsers)
 	}
  	_ = r.Group("resp")
 	{
