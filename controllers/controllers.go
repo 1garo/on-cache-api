@@ -15,7 +15,10 @@ var _id = new(int32)
 func GetAllUsers(c *gin.Context) {
 	var login []*models.LOGIN
 	login = models.GetUsers()
-	log.Printf("GetAllUsers(): %v : %d", login, *_id)
+	for _, value := range login {
+		log.Printf("GetAllUsers(): %v : %d", value, *_id)
+	}
+	
 	if login == nil {
 		c.JSON(http.StatusOK, gin.H{
 			"err": "don't exist any user in the memory!",
@@ -27,44 +30,10 @@ func GetAllUsers(c *gin.Context) {
 	}
 }
 
-func checkUser(user string, login []*models.LOGIN) (int, int) {
-	var code, id int
-	log.Println(len(login))
-	for i := 0; i < len(login); i++ {
-		log.Printf("checkId(): %v %d", login[i], i)
-		log.Printf("login[i].ID: %d", login[i].ID)
-		if tempUser := login[i].USER; tempUser == user{
-			code = http.StatusOK
-			id = login[i].ID
-			break
-		} else {
-			code = http.StatusBadRequest
-			id = -1
-		}
-	}
-	return code, id
-}
-
-func checkId(id int, login []*models.LOGIN) int {
-	var code int
-	log.Println(len(login))
-	for i := 0; i < len(login); i++ {
-		log.Printf("checkId(): %v %d", login[i], i)
-		log.Printf("login[i].ID: %d", login[i].ID)
-		if tempId := login[i].ID; tempId == id {
-			code = http.StatusOK
-			break
-		} else {
-			code = http.StatusBadRequest
-		}
-	}
-	return code
-}
-
-func GetUserByID(c *gin.Context) {
+func GetUserByName(c *gin.Context) {
 	user := c.Param("user")
 	login := models.GetLogin()
-	code, id := checkUser(user, login)
+	code, id := models.CheckUser(user, login)
 	log.Printf("%d id da request\n", id)
 	if id == -1 {
 		c.JSON(code, gin.H{
@@ -85,7 +54,7 @@ func GetDataByID(c *gin.Context) {
 	}
 	login := models.GetLogin()
 	log.Printf("%d id da request\n", id)
-	code := checkId(id, login)
+	code := models.CheckId(id, login)
 	if code != 200 {
 		c.JSON(code, gin.H{
 			"message": "id does't exist in memory!",
@@ -93,18 +62,19 @@ func GetDataByID(c *gin.Context) {
 	} else {
 		c.JSON(code, gin.H{
 			"user":     login[id].USER,
-			"password": login[id].PASSWORD,
+			"email": login[id].EMAIL,
 		})
 	}
 }
 
 func SetData(c *gin.Context) {
+	// TODO: call the create sha function 
 	var loginTemp *models.LOGIN
+	var login []*models.LOGIN
 	err := c.BindJSON(&loginTemp)
 	if err != nil {
 		log.Fatalf("%s", err)
 	}
-	var login []*models.LOGIN
 	login = models.SetLogin(loginTemp, _id)
 	log.Printf("SetData(): %v : %d", login[*_id], *_id)
 	c.JSON(http.StatusOK, gin.H{
