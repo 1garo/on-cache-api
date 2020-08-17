@@ -12,8 +12,8 @@ func main() {
 	r := gin.Default()
 	_ = r.Group("req")
 	{
-		r.GET("/id/:id", controllers.GetDataByID)
-		r.GET("/user/:user", controllers.GetUserByID)
+		r.GET("/user/id/:id", controllers.GetDataByID)
+		r.GET("/user/name/:user", controllers.GetUserByName)
 		r.GET("/users", controllers.GetAllUsers)
 	}
  	_ = r.Group("resp")
