@@ -13,12 +13,12 @@ func main() {
 	_ = r.Group("req")
 	{
 		r.GET("/user/id/:id", controllers.GetDataByID)
-		r.GET("/user/name/:user", controllers.GetUserByName)
+		r.GET("/user/sha/:sha", controllers.GetUserBySHA)
 		r.GET("/users", controllers.GetAllUsers)
 	}
- 	_ = r.Group("resp")
+	_ = r.Group("resp")
 	{
-		r.POST("/data", controllers.SetData)
+		r.POST("/data", controllers.SetUser)
 	}
 
 	err := r.Run()
