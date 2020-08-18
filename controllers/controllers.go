@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"sync/atomic"
 )
+
 // TODO: create a ok in functions that don't return an err
 var _id = new(int32)
 
@@ -18,30 +19,33 @@ func GetAllUsers(c *gin.Context) {
 	for _, value := range login {
 		log.Printf("GetAllUsers(): %v : %d", value, *_id)
 	}
-	
+
 	if login == nil {
 		c.JSON(http.StatusOK, gin.H{
 			"err": "don't exist any user in the memory!",
 		})
-	}else {
+	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"data": login,
 		})
 	}
 }
 
-func GetUserByName(c *gin.Context) {
-	user := c.Param("user")
+func GetUserBySHA(c *gin.Context) {
+	// implement header auth check the sha
+	// auth := c.Request.Header["Authorization"][0]
+	sha := c.Param("sha")
 	login := models.GetLogin()
-	code, id := models.CheckUser(user, login)
-	log.Printf("%d id da request\n", id)
-	if id == -1 {
+	code, id, ok := models.CheckUserWithSHA(sha, login)
+	if !ok {
 		c.JSON(code, gin.H{
 			"message": "user doesn't exist in memory!",
 		})
 	} else {
 		c.JSON(code, gin.H{
-			"id": login[id].ID,
+			"id":    login[id].ID,
+			"user":  login[id].USER,
+			"email": login[id].EMAIL,
 		})
 	}
 }
@@ -54,21 +58,21 @@ func GetDataByID(c *gin.Context) {
 	}
 	login := models.GetLogin()
 	log.Printf("%d id da request\n", id)
-	code := models.CheckId(id, login)
-	if code != 200 {
+	code, ok := models.CheckId(id, login)
+	if !ok {
 		c.JSON(code, gin.H{
 			"message": "id does't exist in memory!",
 		})
 	} else {
 		c.JSON(code, gin.H{
-			"user":     login[id].USER,
+			"user":  login[id].USER,
 			"email": login[id].EMAIL,
 		})
 	}
 }
 
-func SetData(c *gin.Context) {
-	// TODO: call the create sha function 
+func SetUser(c *gin.Context) {
+	// TODO: call the create sha function
 	var loginTemp *models.LOGIN
 	var login []*models.LOGIN
 	err := c.BindJSON(&loginTemp)
@@ -78,7 +82,8 @@ func SetData(c *gin.Context) {
 	login = models.SetLogin(loginTemp, _id)
 	log.Printf("SetData(): %v : %d", login[*_id], *_id)
 	c.JSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("%s was added with success!", login[*_id].USER),
+		"message": fmt.Sprintf("User %s was added with success!", login[*_id].USER),
+		"hash":    login[*_id].HASH,
 	})
 	atomic.AddInt32(_id, 1)
 	log.Printf("SetData(): %d", *_id)
